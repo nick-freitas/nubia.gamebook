@@ -1,3 +1,4 @@
+import { Gamebook } from '@indigobit/nubia.common';
 import { Controller } from '@nestjs/common';
 import { MessagePattern, Payload } from '@nestjs/microservices';
 import { AppService } from './app.service';
@@ -6,8 +7,8 @@ import { AppService } from './app.service';
 export class AppController {
   constructor(private readonly appService: AppService) {}
 
-  @MessagePattern('gamebook.get-test')
-  getTest(@Payload() message: any): any {
+  @MessagePattern('gamebooks')
+  gamebooks(@Payload() message: Gamebook): any {
     return this.appService.getTest(message);
   }
 }
