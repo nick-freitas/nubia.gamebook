@@ -1,15 +1,16 @@
 import {
-  GamebookEvent,
-  GamebookEventType,
+  CreateGamebookEvent,
   isCreateGamebookEvent,
   isUpdateGamebookEvent,
   isUserCreatedEvent,
   isUserUpdatedEvent,
   Topics,
-  UserEvent,
+  UpdateGamebookEvent,
+  UserCreatedEvent,
+  UserUpdatedEvent,
 } from '@indigobit/nubia.common';
 import { BadRequestException, Controller } from '@nestjs/common';
-import { MessagePattern, Payload, Transport } from '@nestjs/microservices';
+import { MessagePattern, Payload } from '@nestjs/microservices';
 import { AppService } from './app.service';
 
 @Controller()
@@ -17,7 +18,9 @@ export class AppController {
   constructor(private readonly appService: AppService) {}
 
   @MessagePattern(Topics.USERS)
-  users(@Payload() { value }: { value: UserEvent }): any {
+  users(
+    @Payload() { value }: { value: UserCreatedEvent | UserUpdatedEvent },
+  ): any {
     const { type, data } = value;
     if (!type) {
       throw new BadRequestException('Missing "type" in UserEvent');
@@ -26,17 +29,23 @@ export class AppController {
     console.log(type);
 
     if (isUserCreatedEvent(value)) {
-      return this.appService.userCreatedHandler(data);
+      return this.appService.userCreatedHandler(
+        data as UserCreatedEvent['data'],
+      );
     }
     if (isUserUpdatedEvent(value)) {
-      return this.appService.userUpdatedHandler(type, data);
+      return this.appService.userUpdatedHandler(
+        data as UserUpdatedEvent['data'],
+      );
     }
 
     console.log(`Ignoring ${type}`);
   }
 
   @MessagePattern(Topics.GAMEBOOKS)
-  gamebooks(@Payload() { value }: { value: GamebookEvent }): any {
+  gamebooks(
+    @Payload() { value }: { value: CreateGamebookEvent | UpdateGamebookEvent },
+  ): any {
     const { type, data } = value;
     if (!type) {
       throw new BadRequestException('Missing "type" in UserEvent');
@@ -45,10 +54,14 @@ export class AppController {
     console.log(type);
 
     if (isCreateGamebookEvent(value)) {
-      return this.appService.createGamebook(data);
+      return this.appService.createGamebook(
+        data as CreateGamebookEvent['data'],
+      );
     }
     if (isUpdateGamebookEvent(value)) {
-      return this.appService.updateGamebook(data);
+      return this.appService.updateGamebook(
+        data as UpdateGamebookEvent['data'],
+      );
     }
 
     console.log(`Ignoring ${type}`);

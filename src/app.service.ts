@@ -1,8 +1,13 @@
 import {
+  CreateGamebookEvent,
   EventType,
   Gamebook,
   OutOfOrderEventException,
+  UpdateGamebookEvent,
   User,
+  UserCreatedEvent,
+  UserEventType,
+  UserUpdatedEvent,
 } from '@indigobit/nubia.common';
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { DBService } from './db.service';
@@ -11,7 +16,7 @@ import { DBService } from './db.service';
 export class AppService {
   constructor(private readonly DBService: DBService) {}
 
-  async createGamebook(data: Partial<Gamebook>): Promise<any> {
+  async createGamebook(data: CreateGamebookEvent['data']): Promise<Gamebook> {
     if (!data.id) {
       throw new Error('Missing Id');
     }
@@ -21,7 +26,7 @@ export class AppService {
     return data;
   }
 
-  async updateGamebook(data: Partial<Gamebook>): Promise<any> {
+  async updateGamebook(data: UpdateGamebookEvent['data']): Promise<Gamebook> {
     if (!data.id) {
       throw new Error('Missing Id');
     }
@@ -31,13 +36,15 @@ export class AppService {
     );
     if (index === -1)
       throw new BadRequestException('Bad Id in Gamebook Update Request');
-    data.version += 1;
-    this.DBService.gamebooks[index] = { ...(data as Gamebook) };
+
+    const gb = { ...this.DBService.gamebooks[index], ...data };
+    gb.version += 1;
+    this.DBService.gamebooks[index] = gb;
 
     return data;
   }
 
-  async userCreatedHandler(data: Partial<User>): Promise<any> {
+  async userCreatedHandler(data: UserCreatedEvent['data']): Promise<User> {
     const { fullName, id, email, version } = data;
 
     if (!email) {
@@ -62,10 +69,7 @@ export class AppService {
     return user;
   }
 
-  async userUpdatedHandler(
-    eventType: EventType,
-    data: Partial<User>,
-  ): Promise<any> {
+  async userUpdatedHandler(data: UserUpdatedEvent['data']): Promise<User> {
     const { fullName, id, version } = data;
 
     if (!id) {
@@ -80,7 +84,11 @@ export class AppService {
 
     const user = { ...this.DBService.users[index] };
     if (user.version !== version - 1)
-      throw new OutOfOrderEventException(eventType, user.version - 1, version);
+      throw new OutOfOrderEventException(
+        UserEventType.USER_UPDATED,
+        user.version - 1,
+        version,
+      );
 
     user.fullName = fullName;
     user.version = version;
