@@ -1,6 +1,5 @@
 import {
   CreateGamebookEvent,
-  EventType,
   Gamebook,
   OutOfOrderEventException,
   UpdateGamebookEvent,
@@ -41,7 +40,7 @@ export class AppService {
     gb.version += 1;
     this.DBService.gamebooks[index] = gb;
 
-    return data;
+    return gb;
   }
 
   async userCreatedHandler(data: UserCreatedEvent['data']): Promise<User> {
