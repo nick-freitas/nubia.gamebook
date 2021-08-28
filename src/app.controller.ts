@@ -21,7 +21,7 @@ export class AppController {
   users(
     @Payload() { value }: { value: UserCreatedEvent | UserUpdatedEvent },
   ): any {
-    const { type, data } = value;
+    const { type, data, auth } = value;
     if (!type) {
       throw new BadRequestException('Missing "type" in UserEvent');
     }
@@ -46,7 +46,7 @@ export class AppController {
   gamebooks(
     @Payload() { value }: { value: CreateGamebookEvent | UpdateGamebookEvent },
   ): any {
-    const { type, data } = value;
+    const { type, data, auth } = value;
     if (!type) {
       throw new BadRequestException('Missing "type" in UserEvent');
     }
