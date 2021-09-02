@@ -13,7 +13,7 @@ import { DBService } from './db.service';
 
 @Injectable()
 export class AppService {
-  constructor(private readonly DBService: DBService) {}
+  constructor(private readonly dBService: DBService) {}
 
   async createGamebook(data: CreateGamebookEvent['data']): Promise<Gamebook> {
     if (!data.id) {
@@ -22,7 +22,7 @@ export class AppService {
 
     const gamebook: Gamebook = { ...data, version: 1 };
 
-    this.DBService.gamebooks.push({ ...gamebook });
+    this.dBService.gamebooks.push({ ...gamebook });
 
     return gamebook;
   }
@@ -32,15 +32,15 @@ export class AppService {
       throw new Error('Missing Id');
     }
 
-    const index = this.DBService.gamebooks.findIndex(
+    const index = this.dBService.gamebooks.findIndex(
       (gamebook) => gamebook.id === data.id,
     );
     if (index === -1)
       throw new BadRequestException('Bad Id in Gamebook Update Request');
 
-    const gb = { ...this.DBService.gamebooks[index], ...data };
+    const gb = { ...this.dBService.gamebooks[index], ...data };
     gb.version += 1;
-    this.DBService.gamebooks[index] = gb;
+    this.dBService.gamebooks[index] = gb;
 
     return gb;
   }
@@ -66,7 +66,7 @@ export class AppService {
       roles: roles,
     };
 
-    this.DBService.users.push({ ...user });
+    this.dBService.users.push({ ...user });
 
     return user;
   }
@@ -78,13 +78,13 @@ export class AppService {
       throw new Error('Missing Id');
     }
 
-    const index = this.DBService.users.findIndex(
+    const index = this.dBService.users.findIndex(
       (user) => user.id === id && user.active === true,
     );
     if (index === -1)
       throw new BadRequestException('Bad Id in User Update Request');
 
-    const user = { ...this.DBService.users[index] };
+    const user = { ...this.dBService.users[index] };
     if (user.version !== version - 1)
       throw new OutOfOrderEventException(
         UserEventType.USER_UPDATED,
@@ -94,7 +94,7 @@ export class AppService {
 
     user.fullName = fullName;
     user.version = version;
-    this.DBService.users[index] = { ...user };
+    this.dBService.users[index] = { ...user };
 
     return user;
   }
