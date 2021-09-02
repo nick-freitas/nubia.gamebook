@@ -20,9 +20,11 @@ export class AppService {
       throw new Error('Missing Id');
     }
 
-    this.DBService.gamebooks.push({ ...(data as Gamebook) });
+    const gamebook: Gamebook = { ...data, version: 1 };
 
-    return data;
+    this.DBService.gamebooks.push({ ...gamebook });
+
+    return gamebook;
   }
 
   async updateGamebook(data: UpdateGamebookEvent['data']): Promise<Gamebook> {
@@ -44,7 +46,7 @@ export class AppService {
   }
 
   async userCreatedHandler(data: UserCreatedEvent['data']): Promise<User> {
-    const { fullName, id, email, version } = data;
+    const { fullName, id, email, version, roles } = data;
 
     if (!email) {
       throw new Error('Missing Email');
@@ -61,6 +63,7 @@ export class AppService {
       email: email,
       fullName: fullName,
       version: version,
+      roles: roles,
     };
 
     this.DBService.users.push({ ...user });
